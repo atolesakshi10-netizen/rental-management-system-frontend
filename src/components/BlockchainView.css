@@ -1,0 +1,31 @@
+.blockchain-card{
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:25px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+}
+
+.verified{
+
+    background:#dcfce7;
+
+    color:#16a34a;
+
+    padding:8px 15px;
+
+    border-radius:20px;
+
+    font-weight:600;
+
+}
+
+.table{
+
+    margin-top:25px;
+
+}

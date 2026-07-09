@@ -1,0 +1,24 @@
+
+.report-card{
+padding:30px;
+border-radius:25px;
+color:white;
+box-shadow:0 8px 20px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+
+.blue-card{
+background:#2563eb;
+}
+
+.green-card{
+background:#16a34a;
+}
+
+.yellow-card{
+background:#f59e0b;
+}
+
+.purple-card{
+background:#8b5cf6;
+}
