@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import API from "../services/api";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import "./Dashboard.css";
@@ -55,14 +55,14 @@ function Dashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(
-        "https://rental-management-system-backend-0h42.onrender.com/dashboard/stats",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const response = await API.get(
+  "/dashboard/stats",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }
+);
 
       setStats(response.data);
     } catch (error) {

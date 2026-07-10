@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../services/api";
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
 
 function AuditLog() {
 
     const [logs, setLogs] = useState([]);
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         fetchLogs();
@@ -15,8 +18,8 @@ function AuditLog() {
 
             const token = localStorage.getItem("token");
 
-            const response = await axios.get(
-                "https://rental-management-system-backend-0h42.onrender.com/audit/",
+            const response = await API.get(
+                "/audit/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -24,53 +27,110 @@ function AuditLog() {
                 }
             );
 
-            console.log(response.data);
-
             setLogs(response.data);
 
         } catch (error) {
 
-            console.error(error);
+            console.log(error);
 
             alert("Failed to load audit logs");
         }
+
     };
 
-    return (
-        <div className="container mt-5">
+    const filteredLogs = logs.filter(
+        (log) =>
+            log.user_email
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
 
-            <h2>Audit Logs</h2>
-
-            <table className="table table-bordered">
-
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>User Email</th>
-                        <th>Action</th>
-                        <th>Timestamp</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    {logs.map((log) => (
-
-                        <tr key={log.id}>
-                            <td>{log.id}</td>
-                            <td>{log.user_email}</td>
-                            <td>{log.action}</td>
-                            <td>{log.timestamp}</td>
-                        </tr>
-
-                    ))}
-
-                </tbody>
-
-            </table>
-
-        </div>
+            log.action
+                .toLowerCase()
+                .includes(search.toLowerCase())
     );
+
+    return (
+
+        <>
+            <Sidebar />
+
+            <div className="dashboard-content">
+
+                <Navbar />
+
+                <div className="card p-4 shadow">
+
+                    <h2 className="mb-4">
+                        Audit Logs
+                    </h2>
+
+                    <input
+                        type="text"
+                        className="form-control mb-3"
+                        placeholder="Search by Email or Action..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+
+                    <table className="table table-bordered table-striped">
+
+                        <thead className="table-dark">
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>User Email</th>
+                                <th>Action</th>
+                                <th>Timestamp</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {filteredLogs.length > 0 ? (
+
+                                filteredLogs.map((log) => (
+
+                                    <tr key={log.id}>
+
+                                        <td>{log.id}</td>
+                                        <td>{log.user_email}</td>
+                                        <td>{log.action}</td>
+                                        <td>{log.timestamp}</td>
+
+                                    </tr>
+
+                                ))
+
+                            ) : (
+
+                                <tr>
+
+                                    <td
+                                        colSpan="4"
+                                        className="text-center"
+                                    >
+                                        No Audit Logs Found
+                                    </td>
+
+                                </tr>
+
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </>
+
+    );
+
 }
 
 export default AuditLog;

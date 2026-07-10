@@ -5,35 +5,20 @@ function PropertyList() {
 
     const [properties, setProperties] = useState([]);
     const [search, setSearch] = useState("");
-    const filteredProperties = properties.filter(
-    (property) =>
-        property.property_name
-            .toLowerCase()
-            .includes(search.toLowerCase()) ||
-
-        property.address
-            .toLowerCase()
-            .includes(search.toLowerCase())
-);
 
     useEffect(() => {
-
         fetchProperties();
-
     }, []);
 
     const fetchProperties = async () => {
 
         try {
 
-            const response = await API.get(
-                "/properties/"
-            );
+            const response = await API.get("/properties/");
 
             setProperties(response.data);
 
-        }
-        catch (error) {
+        } catch (error) {
 
             console.log(error);
 
@@ -41,32 +26,32 @@ function PropertyList() {
 
     };
 
+    const filteredProperties = properties.filter(
+        (property) =>
+            property.property_name
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+
+            property.address
+                .toLowerCase()
+                .includes(search.toLowerCase())
+    );
+
     return (
 
         <div className="container mt-5">
-            return (
-    <div className="container mt-5">
 
-        <h2>Properties</h2>
+            <h2>Properties</h2>
 
-        <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="Search Property by Name or Address..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-        />
+            <input
+                type="text"
+                className="form-control mb-3"
+                placeholder="Search Property by Name or Address..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+            />
 
-        <table className="table table-bordered">
-            ...
-        </table>
-
-    </div>
-);
-
-            <h1>Properties</h1>
-
-            <table className="table table-bordered">
+            <table className="table table-bordered table-striped">
 
                 <thead>
 
@@ -81,15 +66,22 @@ function PropertyList() {
 
                 </thead>
 
-              <tbody>
-    {filteredProperties.map((property) => (
-        <tr key={property.id}>
-            <td>{property.property_name}</td>
-            <td>{property.address}</td>
-            <td>{property.rent_amount}</td>
-        </tr>
-    ))}
-</tbody>  
+                <tbody>
+
+                    {filteredProperties.map((property) => (
+
+                        <tr key={property.id}>
+
+                            <td>{property.id}</td>
+                            <td>{property.property_name}</td>
+                            <td>{property.address}</td>
+                            <td>₹{property.rent_amount}</td>
+
+                        </tr>
+
+                    ))}
+
+                </tbody>
 
             </table>
 

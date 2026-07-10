@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import API from "../services/api";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
@@ -8,10 +8,13 @@ function PaymentList() {
     const [payments, setPayments] = useState([]);
 
     const [formData, setFormData] = useState({
-        tenant_id: "",
+        agreement_id: "",
         amount: "",
-        payment_date: ""
+        payment_date: "",
+        payment_status: "Paid"
     });
+
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         fetchPayments();
@@ -23,8 +26,8 @@ function PaymentList() {
 
             const token = localStorage.getItem("token");
 
-            const response = await axios.get(
-                "http://127.0.0.1:8000/payments",
+            const response = await API.get(
+                "/payments/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -59,8 +62,8 @@ function PaymentList() {
 
             const token = localStorage.getItem("token");
 
-            await axios.post(
-                "http://127.0.0.1:8000/payments",
+            await API.post(
+                "/payments/",
                 formData,
                 {
                     headers: {
@@ -72,9 +75,10 @@ function PaymentList() {
             fetchPayments();
 
             setFormData({
-                tenant_id: "",
+                agreement_id: "",
                 amount: "",
-                payment_date: ""
+                payment_date: "",
+                payment_status: "Paid"
             });
 
         } catch (error) {
@@ -84,6 +88,17 @@ function PaymentList() {
         }
 
     };
+
+    const filteredPayments = payments.filter(
+        (payment) =>
+            payment.agreement_id
+                .toString()
+                .includes(search) ||
+
+            payment.payment_status
+                .toLowerCase()
+                .includes(search.toLowerCase())
+    );
 
     return (
 
@@ -104,21 +119,21 @@ function PaymentList() {
 
                         <div className="row">
 
-                            <div className="col-md-4">
+                            <div className="col-md-3">
 
                                 <input
                                     type="number"
                                     className="form-control"
-                                    placeholder="Tenant ID"
-                                    name="tenant_id"
-                                    value={formData.tenant_id}
+                                    placeholder="Agreement ID"
+                                    name="agreement_id"
+                                    value={formData.agreement_id}
                                     onChange={handleChange}
                                     required
                                 />
 
                             </div>
 
-                            <div className="col-md-4">
+                            <div className="col-md-3">
 
                                 <input
                                     type="number"
@@ -132,7 +147,7 @@ function PaymentList() {
 
                             </div>
 
-                            <div className="col-md-4">
+                            <div className="col-md-3">
 
                                 <input
                                     type="date"
@@ -145,11 +160,25 @@ function PaymentList() {
 
                             </div>
 
+                            <div className="col-md-3">
+
+                                <select
+                                    className="form-control"
+                                    name="payment_status"
+                                    value={formData.payment_status}
+                                    onChange={handleChange}
+                                >
+                                    <option value="Paid">Paid</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+
+                            </div>
+
                         </div>
 
                         <button
-                            type="submit"
                             className="btn btn-primary mt-3"
+                            type="submit"
                         >
                             Add Payment
                         </button>
@@ -158,24 +187,31 @@ function PaymentList() {
 
                 </div>
 
-
                 <div className="card mt-4 p-4 shadow">
 
                     <h3 className="mb-3">
                         Payment Records
                     </h3>
 
-                    <table className="table table-bordered">
+                    <input
+                        type="text"
+                        className="form-control mb-3"
+                        placeholder="Search by Agreement ID or Status..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
 
-                        <thead>
+                    <table className="table table-bordered table-striped">
+
+                        <thead className="table-dark">
 
                             <tr>
 
                                 <th>ID</th>
-                                <th>Tenant ID</th>
+                                <th>Agreement ID</th>
                                 <th>Amount</th>
                                 <th>Date</th>
-                                <th>Receipt</th>
+                                <th>Status</th>
 
                             </tr>
 
@@ -183,34 +219,36 @@ function PaymentList() {
 
                         <tbody>
 
-                            {payments.map((payment) => (
+                            {filteredPayments.length > 0 ? (
 
-                                <tr key={payment.id}>
+                                filteredPayments.map((payment) => (
 
-                                    <td>{payment.id}</td>
+                                    <tr key={payment.id}>
 
-                                    <td>{payment.tenant_id}</td>
+                                        <td>{payment.id}</td>
+                                        <td>{payment.agreement_id}</td>
+                                        <td>₹{payment.amount}</td>
+                                        <td>{payment.payment_date}</td>
+                                        <td>{payment.payment_status}</td>
 
-                                    <td>₹{payment.amount}</td>
+                                    </tr>
 
-                                    <td>{payment.payment_date}</td>
+                                ))
 
-                                    <td>
+                            ) : (
 
-                                        <a
-                                            href={`http://127.0.0.1:8000/receipt/${payment.id}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="btn btn-success"
-                                        >
-                                            Download Receipt
-                                        </a>
+                                <tr>
 
+                                    <td
+                                        colSpan="5"
+                                        className="text-center"
+                                    >
+                                        No Payments Found
                                     </td>
 
                                 </tr>
 
-                            ))}
+                            )}
 
                         </tbody>
 
