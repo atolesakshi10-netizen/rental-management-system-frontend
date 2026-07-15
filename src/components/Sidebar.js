@@ -1,135 +1,184 @@
 import {
-FaHome,
-FaBuilding,
-FaUsers,
-FaFileContract,
-FaMoneyBill,
-FaLink,
-FaHistory,
-FaChartBar,
-FaBell,
-FaUserCircle,
-FaCog,
-FaSignOutAlt
+  FaHome,
+  FaBuilding,
+  FaUsers,
+  FaFileContract,
+  FaMoneyBillWave,
+  FaLink,
+  FaHistory,
+  FaChartBar,
+  FaUserCircle,
+  FaCog,
+  FaSignOutAlt
 } from "react-icons/fa";
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import "./Sidebar.css";
 
 function Sidebar() {
 
-    const handleLogout = () => {
+  const location = useLocation();
 
-        localStorage.removeItem("token");
+  const handleLogout = () => {
 
-        window.location.href = "/";
+    localStorage.removeItem("token");
 
-    };
+    window.location.href = "/";
 
-    return (
+  };
 
-        <div className="sidebar">
+  const menu = [
 
-            <div>
+    {
+      icon: <FaHome />,
+      text: "Dashboard",
+      path: "/dashboard"
+    },
 
-                <div className="logo">
+    {
+      icon: <FaBuilding />,
+      text: "Properties",
+      path: "/properties"
+    },
 
-                    <h2>RMS</h2>
+    {
+      icon: <FaUsers />,
+      text: "Tenants",
+      path: "/tenants"
+    },
 
-                    <p>Rental Management System</p>
+    {
+      icon: <FaFileContract />,
+      text: "Agreements",
+      path: "/agreements"
+    },
 
-                </div>
+    {
+      icon: <FaMoneyBillWave />,
+      text: "Payments",
+      path: "/payments"
+    },
 
-                <ul>
+    {
+      icon: <FaLink />,
+      text: "Blockchain",
+      path: "/blockchain"
+    },
 
-                    <li>
-                        <Link to="/dashboard">
-                            <FaHome />
-                            Dashboard
-                        </Link>
-                    </li>
+    {
+      icon: <FaHistory />,
+      text: "Audit Logs",
+      path: "/audit"
+    },
 
-                    <li>
-                        <Link to="/properties">
-                            <FaBuilding />
-                            Properties
-                        </Link>
-                    </li>
+    {
+      icon: <FaChartBar />,
+      text: "Reports",
+      path: "/reports"
+    },
 
-                    <li>
-                        <Link to="/tenants">
-                            <FaUsers />
-                            Tenants
-                        </Link>
-                    </li>
+    {
+      icon: <FaUserCircle />,
+      text: "Profile",
+      path: "/profile"
+    },
 
-                    <li>
-                        <Link to="/agreements">
-                            <FaFileContract />
-                            Agreements
-                        </Link>
-                    </li>
+    {
+      icon: <FaCog />,
+      text: "Settings",
+      path: "/settings"
+    }
 
-                    <li>
-                        <Link to="/payments">
-                            <FaMoneyBill />
-                            Payments
-                        </Link>
-                    </li>
+  ];
 
-                    <li>
-                        <Link to="/blockchain">
-                            <FaLink />
-                            Blockchain
-                        </Link>
-                    </li>
+  return (
 
-                    <li>
-                        <Link to="/audit">
-                            <FaHistory />
-                            Audit Logs
-                        </Link>
-                    </li>
-                    <li>
-    <Link to="/reports">
-        <FaChartBar />
-        Reports
-    </Link>
-</li>
-<li>
-    <Link to="/profile">
-        <FaUserCircle />
-        Profile
-    </Link>
-</li>
+    <aside className="sidebar">
 
-                    <li>
-                        <Link to="/settings">
-                            <FaCog />
-                            Settings
-                        </Link>
-                    </li>
+      <div>
 
-                </ul>
+        <div className="sidebar-logo">
 
-            </div>
+          <div className="logo-circle">
 
-            <div className="logout">
+            🏠
 
-                <button onClick={handleLogout}>
+          </div>
 
-                    <FaSignOutAlt />
+          <div>
 
-                    &nbsp; Logout
+            <h2>
 
-                </button>
+              RentalMS
 
-            </div>
+            </h2>
+
+            <span>
+
+              Admin Panel
+
+            </span>
+
+          </div>
 
         </div>
 
-    );
+        <ul className="sidebar-menu">
+
+          {
+
+            menu.map((item) => (
+
+              <li
+                key={item.path}
+                className={
+                  location.pathname === item.path
+                    ? "active"
+                    : ""
+                }
+              >
+
+                <Link to={item.path}>
+
+                  {item.icon}
+
+                  <span>
+
+                    {item.text}
+
+                  </span>
+
+                </Link>
+
+              </li>
+
+            ))
+
+          }
+
+        </ul>
+
+      </div>
+
+      <div className="sidebar-footer">
+
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+        >
+
+          <FaSignOutAlt />
+
+          Logout
+
+        </button>
+
+      </div>
+
+    </aside>
+
+  );
 
 }
 

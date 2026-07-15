@@ -1,68 +1,84 @@
 import {
-  FaSearch,
   FaBell,
-  FaEnvelope,
-  FaUserCircle,
-  FaCalendarAlt
+  FaCog,
+  FaUserCircle
 } from "react-icons/fa";
 
-import "./Navbar.css";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+import "./LandingNavbar.css";
 
 function Navbar() {
 
+  const navigate = useNavigate();
+
+
   return (
 
-    <>
-      <div className="navbar">
+    <div className="top-navbar">
 
-        <div className="welcome">
+      <div className="top-left">
 
-          <h1>Good Evening, Admin! 👋</h1>
+        <h2>Welcome Back 👋</h2>
 
-          <p>Here's what's happening with your rental business today.</p>
+        <p>
+          Here's what's happening with your rental business today.
+        </p>
+
+      </div>
+
+      <div className="top-right">
+
+
+        
+        <div
+          className="nav-icon notification-icon"
+          onClick={() => alert("No new notifications")}
+          style={{ cursor: "pointer" }}
+        >
+
+          <FaBell />
+
+          <span>
+
+            5
+
+          </span>
 
         </div>
 
-        <div className="navbar-right">
+        <div
+          className="nav-icon"
+          onClick={() => navigate("/settings")}
+          style={{ cursor: "pointer" }}
+        >
 
-          <div className="search-box">
+          <FaCog />
 
-            <FaSearch />
+        </div>
 
-            <input
-              type="text"
-              placeholder="Search anything..."
-            />
+        <div
+          className="profile-card"
+          onClick={() => navigate("/profile")}
+          style={{ cursor: "pointer" }}
+        >
 
-          </div>
+          <FaUserCircle className="avatar"/>
 
-          <div className="notification">
+          <div>
 
-            <FaBell />
+            <h4>
 
-            <span>5</span>
+              Admin
 
-          </div>
+            </h4>
 
-          <div className="notification">
+            <span>
 
-            <FaEnvelope />
+              Administrator
 
-            <span>3</span>
-
-          </div>
-
-          <div className="profile-section">
-
-            <FaUserCircle className="profile-icon" />
-
-            <div className="profile-info">
-
-              <h4>Admin User</h4>
-
-              <p>Administrator</p>
-
-            </div>
+            </span>
 
           </div>
 
@@ -70,16 +86,8 @@ function Navbar() {
 
       </div>
 
+    </div>
 
-      <div className="date-card">
-
-        Jun 12, 2026 - Jun 18, 2026
-
-        <FaCalendarAlt />
-
-      </div>
-
-    </>
   );
 
 }

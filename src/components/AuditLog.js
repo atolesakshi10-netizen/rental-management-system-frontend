@@ -1,135 +1,105 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import API from "../services/api";
-import Sidebar from "./Sidebar";
-import Navbar from "./Navbar";
+
+import PageHeader from "./PageHeader";
+
+import AuditStats from "./audit/AuditStats";
+import AuditFilter from "./audit/AuditFilter";
+import AuditTable from "./audit/AuditTable";
+import AuditTimeline from "./audit/AuditTimeline";
+
+import exportAuditLogs from "../utils/exportAuditLogs";
 
 function AuditLog() {
 
-    const [logs, setLogs] = useState([]);
-    const [search, setSearch] = useState("");
+  const [logs, setLogs] = useState([]);
+  const [search, setSearch] = useState("");
 
-    useEffect(() => {
-        fetchLogs();
-    }, []);
+  useEffect(() => {
 
-    const fetchLogs = async () => {
+    fetchLogs();
 
-        try {
+  }, []);
 
-            const token = localStorage.getItem("token");
+  const fetchLogs = async () => {
 
-            const response = await API.get(
-                "/audit/",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+    try {
 
-            setLogs(response.data);
+      const response = await API.get("/audit/");
 
-        } catch (error) {
+      setLogs(response.data);
 
-            console.log(error);
+    }
 
-            alert("Failed to load audit logs");
-        }
+    catch (error) {
 
-    };
+      console.log(error);
 
-    const filteredLogs = logs.filter(
-        (log) =>
-            log.user_email
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
+    }
 
-            log.action
-                .toLowerCase()
-                .includes(search.toLowerCase())
-    );
+  };
 
-    return (
+  const filteredLogs = logs.filter((log) =>
 
-        <>
-            <Sidebar />
+    log.user_email
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-            <div className="dashboard-content">
+    ||
 
-                <Navbar />
+    log.action
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-                <div className="card p-4 shadow">
+  );
 
-                    <h2 className="mb-4">
-                        Audit Logs
-                    </h2>
+  return (
 
-                    <input
-                        type="text"
-                        className="form-control mb-3"
-                        placeholder="Search by Email or Action..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+    <div className="dashboard-content">
 
-                    <table className="table table-bordered table-striped">
+      <PageHeader
 
-                        <thead className="table-dark">
+        title="📜 Audit Logs"
 
-                            <tr>
+        subtitle="Track every activity performed in the system"
 
-                                <th>ID</th>
-                                <th>User Email</th>
-                                <th>Action</th>
-                                <th>Timestamp</th>
+        buttonText="Export Logs"
 
-                            </tr>
+        onButtonClick={() => exportAuditLogs(filteredLogs)}
 
-                        </thead>
+      />
 
-                        <tbody>
+      <AuditStats
 
-                            {filteredLogs.length > 0 ? (
+        logs={filteredLogs}
 
-                                filteredLogs.map((log) => (
+      />
 
-                                    <tr key={log.id}>
+      <AuditFilter
 
-                                        <td>{log.id}</td>
-                                        <td>{log.user_email}</td>
-                                        <td>{log.action}</td>
-                                        <td>{log.timestamp}</td>
+        search={search}
 
-                                    </tr>
+        setSearch={setSearch}
 
-                                ))
+        onExport={() => exportAuditLogs(filteredLogs)}
 
-                            ) : (
+      />
 
-                                <tr>
+      <AuditTable
 
-                                    <td
-                                        colSpan="4"
-                                        className="text-center"
-                                    >
-                                        No Audit Logs Found
-                                    </td>
+        logs={filteredLogs}
 
-                                </tr>
+      />
 
-                            )}
+      <AuditTimeline
 
-                        </tbody>
+        logs={filteredLogs}
 
-                    </table>
+      />
 
-                </div>
+    </div>
 
-            </div>
-
-        </>
-
-    );
+  );
 
 }
 

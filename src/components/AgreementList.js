@@ -1,123 +1,158 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
+import PageHeader from "./PageHeader";
+import SearchBar from "./SearchBar";
+
+import AgreementTable from "./agreement/AgreementTable";
+
+import AddAgreementModal from "./agreement/AddAgreementModal";
+import ViewAgreementModal from "./agreement/ViewAgreementModal";
+import EditAgreementModal from "./agreement/EditAgreementModal";
+import DeleteAgreementModal from "./agreement/DeleteAgreementModal";
+
+import exportAgreements from "../utils/exportAgreements";
+
 function AgreementList() {
 
-    const [agreements, setAgreements] = useState([]);
-    const [search, setSearch] = useState("");
+  const [agreements, setAgreements] = useState([]);
+  const [search, setSearch] = useState("");
 
-    useEffect(() => {
-        fetchAgreements();
-    }, []);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const fetchAgreements = async () => {
+  const [selectedAgreement, setSelectedAgreement] = useState(null);
 
-        try {
+  useEffect(() => {
+    fetchAgreements();
+  }, []);
 
-            const token = localStorage.getItem("token");
+  const fetchAgreements = async () => {
 
-            const response = await API.get(
-                "/agreements/",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+    try {
 
-            setAgreements(response.data);
+      const response = await API.get("/agreements/");
 
-        } catch (error) {
+      setAgreements(response.data);
 
-            console.log(error);
+    }
 
-        }
+    catch (error) {
 
-    };
+      console.log(error);
 
-    const filteredAgreements = agreements.filter(
-        (agreement) =>
-            agreement.property_id
-                .toString()
-                .includes(search) ||
+    }
 
-            agreement.tenant_id
-                .toString()
-                .includes(search)
-    );
+  };
 
-    return (
+  const filteredAgreements = agreements.filter((agreement) =>
 
-        <div className="container mt-5">
+    agreement.property_id
+      .toString()
+      .includes(search)
 
-            <h2>Agreements</h2>
+    ||
 
-            <input
-                type="text"
-                className="form-control mb-3"
-                placeholder="Search by Property ID or Tenant ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
+    agreement.tenant_id
+      .toString()
+      .includes(search)
 
-            <table className="table table-bordered table-striped">
+  );
 
-                <thead className="table-dark">
+  const handleView = (agreement) => {
 
-                    <tr>
+    setSelectedAgreement(agreement);
 
-                        <th>ID</th>
-                        <th>Property ID</th>
-                        <th>Tenant ID</th>
-                        <th>Monthly Rent</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
+    setShowViewModal(true);
 
-                    </tr>
+  };
 
-                </thead>
+  const handleEdit = (agreement) => {
 
-                <tbody>
+    setSelectedAgreement(agreement);
 
-                    {filteredAgreements.length > 0 ? (
+    setShowEditModal(true);
 
-                        filteredAgreements.map((agreement) => (
+  };
 
-                            <tr key={agreement.id}>
+  const handleDelete = (agreement) => {
 
-                                <td>{agreement.id}</td>
-                                <td>{agreement.property_id}</td>
-                                <td>{agreement.tenant_id}</td>
-                                <td>₹{agreement.monthly_rent}</td>
-                                <td>{agreement.start_date}</td>
-                                <td>{agreement.end_date}</td>
+    setSelectedAgreement(agreement);
 
-                            </tr>
+    setShowDeleteModal(true);
 
-                        ))
+  };
 
-                    ) : (
+  return (
 
-                        <tr>
+    <div className="dashboard-content">
 
-                            <td
-                                colSpan="6"
-                                className="text-center"
-                            >
-                                No Agreements Found
-                            </td>
+      <PageHeader
+        title="📄 Agreements"
+        subtitle="Manage all rental agreements"
+        buttonText="Add Agreement"
+        onButtonClick={() => setShowAddModal(true)}
+      />
 
-                        </tr>
+      <SearchBar
+        search={search}
+        setSearch={setSearch}
+        onExport={() => exportAgreements(filteredAgreements)}
+      />
 
-                    )}
+      <AgreementTable
+        agreements={filteredAgreements}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-                </tbody>
+      <AddAgreementModal
+        show={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={fetchAgreements}
+      />
 
-            </table>
+      <ViewAgreementModal
+        show={showViewModal}
+        agreement={selectedAgreement}
+        onClose={() => {
 
-        </div>
+          setShowViewModal(false);
+          setSelectedAgreement(null);
 
-    );
+        }}
+      />
+
+      <EditAgreementModal
+        show={showEditModal}
+        agreement={selectedAgreement}
+        onClose={() => {
+
+          setShowEditModal(false);
+          setSelectedAgreement(null);
+
+        }}
+        onSuccess={fetchAgreements}
+      />
+
+      <DeleteAgreementModal
+        show={showDeleteModal}
+        agreement={selectedAgreement}
+        onClose={() => {
+
+          setShowDeleteModal(false);
+          setSelectedAgreement(null);
+
+        }}
+        onSuccess={fetchAgreements}
+      />
+
+    </div>
+
+  );
 
 }
 

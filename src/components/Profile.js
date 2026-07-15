@@ -1,60 +1,83 @@
-import Sidebar from "./Sidebar";
-import Navbar from "./Navbar";
-import "./Profile.css";
+import { useEffect, useState } from "react";
+import API from "../services/api";
+
+import PageHeader from "./PageHeader";
+
+import ProfileCard from "./profile/ProfileCard";
+import ProfileInfo from "./profile/ProfileInfo";
+import ChangePassword from "./profile/ChangePassword";
+
+import "../styles/Profile.css";
 
 function Profile() {
 
-    return (
+  const [user, setUser] = useState(null);
 
-        <>
-            <Sidebar />
+  useEffect(() => {
 
-            <div className="dashboard-content">
+    fetchProfile();
 
-                <Navbar />
+  }, []);
 
-                <div className="profile-card">
+  const fetchProfile = async () => {
 
-                    <img
-                        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                        alt="profile"
-                    />
+    try {
 
-                    <h2>Admin User</h2>
+      const response = await API.get("/auth/profile");
 
-                    <p className="role">
-                        Administrator
-                    </p>
+      setUser(response.data);
 
-                    <hr />
+    }
 
-                    <div className="info">
+    catch (error) {
 
-                        <h5>Email</h5>
-                        <p>admin@gmail.com</p>
+      console.log(error);
 
-                        <h5>Phone</h5>
-                        <p>+91 9876543210</p>
+    }
 
-                        <h5>Address</h5>
-                        <p>Pune, Maharashtra</p>
+  };
 
-                        <h5>Joined</h5>
-                        <p>12 June 2026</p>
+  return (
 
-                    </div>
+    <div className="dashboard-content">
 
-                    <button className="btn btn-primary">
-                        Edit Profile
-                    </button>
+      <PageHeader
 
-                </div>
+        title="👤 Profile"
 
-            </div>
+        subtitle="Manage your account information"
 
-        </>
+        buttonText=""
 
-    );
+      />
+
+      <div className="profile-container">
+
+        <ProfileCard
+
+          user={user}
+
+        />
+
+        <div className="profile-right">
+
+          <ProfileInfo
+
+            user={user}
+
+            onSuccess={fetchProfile}
+
+          />
+
+          <ChangePassword />
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
 
 }
 

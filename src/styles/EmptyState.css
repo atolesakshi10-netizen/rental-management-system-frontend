@@ -1,0 +1,35 @@
+.empty-state{
+
+background:white;
+
+padding:80px;
+
+text-align:center;
+
+border-radius:25px;
+
+box-shadow:0 15px 35px rgba(15,23,42,.08);
+
+}
+
+.empty-state svg{
+
+font-size:70px;
+
+color:#2563eb;
+
+margin-bottom:20px;
+
+}
+
+.empty-state h2{
+
+margin-bottom:10px;
+
+}
+
+.empty-state p{
+
+color:#64748b;
+
+}

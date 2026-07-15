@@ -1,101 +1,161 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
+import PageHeader from "./PageHeader";
+import SearchBar from "./SearchBar";
+
+import TenantTable from "./tenant/TenantTable";
+import AddTenantModal from "./tenant/AddTenantModal";
+import ViewTenantModal from "./tenant/ViewTenantModal";
+import EditTenantModal from "./tenant/EditTenantModal";
+import DeleteTenantModal from "./tenant/DeleteTenantModal";
+
+import exportTenants from "../utils/exportTenants";
 function TenantList() {
 
-    const [tenants, setTenants] = useState([]);
-    const [search, setSearch] = useState("");
+  const [tenants, setTenants] = useState([]);
+  const [search, setSearch] = useState("");
 
-    const filteredTenants = tenants.filter(
-        (tenant) =>
-            tenant.tenant_name
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-            tenant.email
-                .toLowerCase()
-                .includes(search.toLowerCase())
-    );
+  const [selectedTenant, setSelectedTenant] = useState(null);
 
-    useEffect(() => {
-        fetchTenants();
-    }, []);
+  useEffect(() => {
 
-    const fetchTenants = async () => {
+    fetchTenants();
 
-        try {
+  }, []);
 
-            const response = await API.get(
-                "/tenants/"
-            );
+  const fetchTenants = async () => {
 
-            setTenants(response.data);
+    try {
 
-        }
-        catch (error) {
+      const response = await API.get("/tenants/");
 
-            console.log(error);
+      setTenants(response.data);
 
-        }
+    }
 
-    };
+    catch (error) {
 
-    return (
+      console.log(error);
 
-        <div className="container mt-5">
+    }
 
-            <h1>Tenants</h1>
+  };
 
-            <input
-                type="text"
-                className="form-control mb-3"
-                placeholder="Search Tenant by Name or Email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
+  const filteredTenants = tenants.filter((tenant) =>
 
-            <table className="table table-bordered">
+    tenant.tenant_name
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-                <thead>
+    ||
 
-                    <tr>
+    tenant.email
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
+  );
 
-                    </tr>
+  const handleView = (tenant) => {
 
-                </thead>
+    setSelectedTenant(tenant);
 
-                <tbody>
+    setShowViewModal(true);
 
-                    {
-                        filteredTenants.map((tenant) => (
+  };
 
-                            <tr key={tenant.id}>
+  const handleEdit = (tenant) => {
 
-                                <td>{tenant.id}</td>
+    setSelectedTenant(tenant);
 
-                                <td>{tenant.tenant_name}</td>
+    setShowEditModal(true);
 
-                                <td>{tenant.email}</td>
+  };
 
-                                <td>{tenant.phone}</td>
+  const handleDelete = (tenant) => {
 
-                            </tr>
+    setSelectedTenant(tenant);
 
-                        ))
-                    }
+    setShowDeleteModal(true);
 
-                </tbody>
+  };
 
-            </table>
+  return (
 
-        </div>
+    <div className="dashboard-content">
 
-    );
+      <PageHeader
+        title="👥 Tenants"
+        subtitle="Manage all tenants"
+        buttonText="Add Tenant"
+        onButtonClick={() => setShowAddModal(true)}
+      />
+
+      <SearchBar
+        search={search}
+        setSearch={setSearch}
+        onExport={() => exportTenants(filteredTenants)}
+      />
+
+      <TenantTable
+        tenants={filteredTenants}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <AddTenantModal
+        show={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={fetchTenants}
+      />
+
+      <ViewTenantModal
+        show={showViewModal}
+        tenant={selectedTenant}
+        onClose={() => {
+
+          setShowViewModal(false);
+
+          setSelectedTenant(null);
+
+        }}
+      />
+
+      <EditTenantModal
+        show={showEditModal}
+        tenant={selectedTenant}
+        onClose={() => {
+
+          setShowEditModal(false);
+
+          setSelectedTenant(null);
+
+        }}
+        onSuccess={fetchTenants}
+      />
+
+      <DeleteTenantModal
+        show={showDeleteModal}
+        tenant={selectedTenant}
+        onClose={() => {
+
+          setShowDeleteModal(false);
+
+          setSelectedTenant(null);
+
+        }}
+        onSuccess={fetchTenants}
+      />
+
+    </div>
+
+  );
 
 }
 

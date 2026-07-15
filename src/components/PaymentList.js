@@ -1,266 +1,158 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
-import Sidebar from "./Sidebar";
-import Navbar from "./Navbar";
+
+import PageHeader from "./PageHeader";
+import SearchBar from "./SearchBar";
+
+import PaymentTable from "./payment/PaymentTable";
+
+import AddPaymentModal from "./payment/AddPaymentModal";
+import ViewPaymentModal from "./payment/ViewPaymentModal";
+import EditPaymentModal from "./payment/EditPaymentModal";
+import DeletePaymentModal from "./payment/DeletePaymentModal";
+
+import exportPayments from "../utils/exportPayments";
 
 function PaymentList() {
 
-    const [payments, setPayments] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [search, setSearch] = useState("");
 
-    const [formData, setFormData] = useState({
-        agreement_id: "",
-        amount: "",
-        payment_date: "",
-        payment_status: "Paid"
-    });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const [search, setSearch] = useState("");
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
-    useEffect(() => {
-        fetchPayments();
-    }, []);
+  useEffect(() => {
+    fetchPayments();
+  }, []);
 
-    const fetchPayments = async () => {
+  const fetchPayments = async () => {
 
-        try {
+    try {
 
-            const token = localStorage.getItem("token");
+      const response = await API.get("/payments/");
 
-            const response = await API.get(
-                "/payments/",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+      setPayments(response.data);
 
-            setPayments(response.data);
+    }
 
-        } catch (error) {
+    catch (error) {
 
-            console.log(error);
+      console.log(error);
 
-        }
+    }
 
-    };
+  };
 
-    const handleChange = (e) => {
+  const filteredPayments = payments.filter((payment) =>
 
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+    payment.agreement_id
+      .toString()
+      .includes(search)
 
-    };
+    ||
 
-    const handleSubmit = async (e) => {
+    payment.payment_status
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-        e.preventDefault();
+  );
 
-        try {
+  const handleView = (payment) => {
 
-            const token = localStorage.getItem("token");
+    setSelectedPayment(payment);
 
-            await API.post(
-                "/payments/",
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+    setShowViewModal(true);
 
-            fetchPayments();
+  };
 
-            setFormData({
-                agreement_id: "",
-                amount: "",
-                payment_date: "",
-                payment_status: "Paid"
-            });
+  const handleEdit = (payment) => {
 
-        } catch (error) {
+    setSelectedPayment(payment);
 
-            console.log(error);
+    setShowEditModal(true);
 
-        }
+  };
 
-    };
+  const handleDelete = (payment) => {
 
-    const filteredPayments = payments.filter(
-        (payment) =>
-            payment.agreement_id
-                .toString()
-                .includes(search) ||
+    setSelectedPayment(payment);
 
-            payment.payment_status
-                .toLowerCase()
-                .includes(search.toLowerCase())
-    );
+    setShowDeleteModal(true);
 
-    return (
+  };
 
-        <>
-            <Sidebar />
+  return (
 
-            <div className="dashboard-content">
+    <div className="dashboard-content">
 
-                <Navbar />
+      <PageHeader
+        title="💳 Payments"
+        subtitle="Manage all payment transactions"
+        buttonText="Add Payment"
+        onButtonClick={() => setShowAddModal(true)}
+      />
 
-                <div className="card p-4 shadow">
+      <SearchBar
+        search={search}
+        setSearch={setSearch}
+        onExport={() => exportPayments(filteredPayments)}
+      />
 
-                    <h2 className="mb-4">
-                        Payments
-                    </h2>
+      <PaymentTable
+        payments={filteredPayments}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-                    <form onSubmit={handleSubmit}>
+      <AddPaymentModal
+        show={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={fetchPayments}
+      />
 
-                        <div className="row">
+      <ViewPaymentModal
+        show={showViewModal}
+        payment={selectedPayment}
+        onClose={() => {
 
-                            <div className="col-md-3">
+          setShowViewModal(false);
+          setSelectedPayment(null);
 
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="Agreement ID"
-                                    name="agreement_id"
-                                    value={formData.agreement_id}
-                                    onChange={handleChange}
-                                    required
-                                />
+        }}
+      />
 
-                            </div>
+      <EditPaymentModal
+        show={showEditModal}
+        payment={selectedPayment}
+        onClose={() => {
 
-                            <div className="col-md-3">
+          setShowEditModal(false);
+          setSelectedPayment(null);
 
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="Amount"
-                                    name="amount"
-                                    value={formData.amount}
-                                    onChange={handleChange}
-                                    required
-                                />
+        }}
+        onSuccess={fetchPayments}
+      />
 
-                            </div>
+      <DeletePaymentModal
+        show={showDeleteModal}
+        payment={selectedPayment}
+        onClose={() => {
 
-                            <div className="col-md-3">
+          setShowDeleteModal(false);
+          setSelectedPayment(null);
 
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    name="payment_date"
-                                    value={formData.payment_date}
-                                    onChange={handleChange}
-                                    required
-                                />
+        }}
+        onSuccess={fetchPayments}
+      />
 
-                            </div>
+    </div>
 
-                            <div className="col-md-3">
-
-                                <select
-                                    className="form-control"
-                                    name="payment_status"
-                                    value={formData.payment_status}
-                                    onChange={handleChange}
-                                >
-                                    <option value="Paid">Paid</option>
-                                    <option value="Pending">Pending</option>
-                                </select>
-
-                            </div>
-
-                        </div>
-
-                        <button
-                            className="btn btn-primary mt-3"
-                            type="submit"
-                        >
-                            Add Payment
-                        </button>
-
-                    </form>
-
-                </div>
-
-                <div className="card mt-4 p-4 shadow">
-
-                    <h3 className="mb-3">
-                        Payment Records
-                    </h3>
-
-                    <input
-                        type="text"
-                        className="form-control mb-3"
-                        placeholder="Search by Agreement ID or Status..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-
-                    <table className="table table-bordered table-striped">
-
-                        <thead className="table-dark">
-
-                            <tr>
-
-                                <th>ID</th>
-                                <th>Agreement ID</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Status</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {filteredPayments.length > 0 ? (
-
-                                filteredPayments.map((payment) => (
-
-                                    <tr key={payment.id}>
-
-                                        <td>{payment.id}</td>
-                                        <td>{payment.agreement_id}</td>
-                                        <td>₹{payment.amount}</td>
-                                        <td>{payment.payment_date}</td>
-                                        <td>{payment.payment_status}</td>
-
-                                    </tr>
-
-                                ))
-
-                            ) : (
-
-                                <tr>
-
-                                    <td
-                                        colSpan="5"
-                                        className="text-center"
-                                    >
-                                        No Payments Found
-                                    </td>
-
-                                </tr>
-
-                            )}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </>
-
-    );
+  );
 
 }
 

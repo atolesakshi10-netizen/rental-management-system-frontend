@@ -1,93 +1,162 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
+import PageHeader from "../components/PageHeader";
+import SearchBar from "../components/SearchBar";
+import PropertyTable from "../components/PropertyTable";
+
+import AddPropertyModal from "../components/AddPropertyModal";
+import ViewPropertyModal from "../components/ViewPropertyModal";
+import EditPropertyModal from "../components/EditPropertyModal";
+import DeletePropertyModal from "../components/DeletePropertyModal";
+
+import exportProperties from "../utils/exportProperties";
+
 function PropertyList() {
 
-    const [properties, setProperties] = useState([]);
-    const [search, setSearch] = useState("");
+  const [properties, setProperties] = useState([]);
+  const [search, setSearch] = useState("");
 
-    useEffect(() => {
-        fetchProperties();
-    }, []);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const fetchProperties = async () => {
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
-        try {
+  useEffect(() => {
 
-            const response = await API.get("/properties/");
+    fetchProperties();
 
-            setProperties(response.data);
+  }, []);
 
-        } catch (error) {
+  const fetchProperties = async () => {
 
-            console.log(error);
+    try {
 
-        }
+      const response = await API.get("/properties/");
 
-    };
+      setProperties(response.data);
 
-    const filteredProperties = properties.filter(
-        (property) =>
-            property.property_name
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
+    }
 
-            property.address
-                .toLowerCase()
-                .includes(search.toLowerCase())
-    );
+    catch (error) {
 
-    return (
+      console.log(error);
 
-        <div className="container mt-5">
+    }
 
-            <h2>Properties</h2>
+  };
 
-            <input
-                type="text"
-                className="form-control mb-3"
-                placeholder="Search Property by Name or Address..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
+  const filteredProperties = properties.filter((property) =>
 
-            <table className="table table-bordered table-striped">
+    property.property_name
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-                <thead>
+    ||
 
-                    <tr>
+    property.address
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
-                        <th>ID</th>
-                        <th>Property Name</th>
-                        <th>Address</th>
-                        <th>Rent Amount</th>
+  );
 
-                    </tr>
+  const handleView = (property) => {
 
-                </thead>
+    setSelectedProperty(property);
 
-                <tbody>
+    setShowViewModal(true);
 
-                    {filteredProperties.map((property) => (
+  };
 
-                        <tr key={property.id}>
+  const handleEdit = (property) => {
 
-                            <td>{property.id}</td>
-                            <td>{property.property_name}</td>
-                            <td>{property.address}</td>
-                            <td>₹{property.rent_amount}</td>
+    setSelectedProperty(property);
 
-                        </tr>
+    setShowEditModal(true);
 
-                    ))}
+  };
 
-                </tbody>
+  const handleDelete = (property) => {
 
-            </table>
+    setSelectedProperty(property);
 
-        </div>
+    setShowDeleteModal(true);
 
-    );
+  };
+
+  return (
+
+    <div className="dashboard-content">
+
+      <PageHeader
+        title="🏠 Properties"
+        subtitle="Manage all your rental properties"
+        buttonText="Add Property"
+        onButtonClick={() => setShowAddModal(true)}
+      />
+
+      <SearchBar
+        search={search}
+        setSearch={setSearch}
+        onExport={() => exportProperties(filteredProperties)}
+      />
+
+      <PropertyTable
+        properties={filteredProperties}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <AddPropertyModal
+        show={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={fetchProperties}
+      />
+
+      <ViewPropertyModal
+        show={showViewModal}
+        property={selectedProperty}
+        onClose={() => {
+
+          setShowViewModal(false);
+
+          setSelectedProperty(null);
+
+        }}
+      />
+
+      <EditPropertyModal
+        show={showEditModal}
+        property={selectedProperty}
+        onClose={() => {
+
+          setShowEditModal(false);
+
+          setSelectedProperty(null);
+
+        }}
+        onSuccess={fetchProperties}
+      />
+
+      <DeletePropertyModal
+        show={showDeleteModal}
+        property={selectedProperty}
+        onClose={() => {
+
+          setShowDeleteModal(false);
+
+          setSelectedProperty(null);
+
+        }}
+        onSuccess={fetchProperties}
+      />
+
+    </div>
+
+  );
 
 }
 
